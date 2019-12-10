@@ -7,6 +7,7 @@ Usage:
   origo datasets create [--file=<file --format=<format> --env=<env> options]
   origo datasets create-version <datasetid> [--file=<file> --format=<format> --env=<env> options]
   origo datasets create-edition <datasetid> [<versionid>] [--file=<file> --format=<format --env=<env> options]
+  origo datasets status <uuid>
 
 options:
   -h --help
@@ -47,6 +48,8 @@ class DatasetsCommand(Command):
             self.create_edition()
         elif self.arg("datasetid") is not None:
             self.dataset()
+        elif self.arg("uuid") is not None:
+            self.status()
         else:
             Command.help()
 
@@ -228,3 +231,17 @@ class DatasetsCommand(Command):
             self.print_success("Uploaded file")
         except Exception as e:
             self.log.exception(f"Failed: {e}")
+
+    # ########################################## #
+    # STATUS
+    # ########################################## #
+    def status(self):
+        status_uuid = self.arg("uuid")
+        self.log.info(f"Getting status with uuid: {status_uuid}")
+        try:
+            status_list = self.ds.get_status(status_uuid)
+            out = create_output(self.opt("format"), "datasets_config.json")
+            out.add_rows(status_list)
+            self.print("Available datasets", out)
+        except Exception as e:
+            self.log.exception(f"Failed badly: {e}")
